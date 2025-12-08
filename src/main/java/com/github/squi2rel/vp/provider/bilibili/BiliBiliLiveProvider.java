@@ -23,7 +23,7 @@ public class BiliBiliLiveProvider extends BiliBiliProvider {
         if (!matcher.find()) return null;
         String cid = matcher.group();
         return CompletableFuture.supplyAsync(() -> {
-            try (HttpClient client = HttpClient.newHttpClient()) {
+            try {
                 HttpResponse<String> response = client.send(makeRequest(String.format(FETCH_URL, cid)), HttpResponse.BodyHandlers.ofString());
                 JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject().getAsJsonObject("data");
                 if (root.get("live_status").getAsLong() != 1) {
@@ -37,7 +37,7 @@ public class BiliBiliLiveProvider extends BiliBiliProvider {
             }
         }).thenApply(meta -> {
             if (meta == null) return null;
-            try (HttpClient client = HttpClient.newHttpClient()) {
+            try {
                 HttpResponse<String> response = client.send(makeRequest(String.format(PLAY_URL, meta.cid())), HttpResponse.BodyHandlers.ofString());
                 JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject().getAsJsonObject("data");
                 String url = root.getAsJsonArray("durl").get(0).getAsJsonObject().get("url").getAsString();

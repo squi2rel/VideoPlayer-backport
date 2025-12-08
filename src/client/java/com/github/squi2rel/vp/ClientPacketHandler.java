@@ -14,8 +14,10 @@ import io.netty.buffer.PooledByteBufAllocator;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.joml.Vector3f;
@@ -199,7 +201,9 @@ public class ClientPacketHandler {
     }
 
     private static void send(byte[] bytes) {
-        ClientPlayNetworking.send(new VideoPayload(bytes));
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBytes(bytes);
+        ClientPlayNetworking.send(VideoPayload.ID, buf);
     }
 
     public static void config(String version) {

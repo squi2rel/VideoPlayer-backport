@@ -33,7 +33,7 @@ public class BiliBiliVideoProvider extends BiliBiliProvider {
             return CompletableFuture.completedFuture(new VideoInfo(source.name(), cache.title, cache.url, str, cache.expireTime, true, VLC_PARAMS));
         }
         return CompletableFuture.supplyAsync(() -> {
-            try (HttpClient client = HttpClient.newHttpClient()) {
+            try {
                 HttpResponse<String> response = client.send(makeRequest(String.format(FETCH_URL, bvid)), HttpResponse.BodyHandlers.ofString());
                 JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject().getAsJsonObject("data");
                 String cid;
@@ -48,7 +48,7 @@ public class BiliBiliVideoProvider extends BiliBiliProvider {
                 return null;
             }
         }).thenApply(meta -> {
-            try (HttpClient client = HttpClient.newHttpClient()) {
+            try {
                 HttpResponse<String> response = client.send(makeRequest(String.format(PLAY_URL, bvid, meta.cid())), HttpResponse.BodyHandlers.ofString());
                 JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject();
                 String url = root.getAsJsonObject("data").getAsJsonArray("durl").get(0).getAsJsonObject().get("url").getAsString();

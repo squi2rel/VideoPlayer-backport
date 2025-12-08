@@ -3,7 +3,6 @@ package com.github.squi2rel.vp.video;
 import com.github.squi2rel.vp.ScreenRenderer;
 import com.github.squi2rel.vp.vivecraft.Vivecraft;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -31,7 +30,7 @@ public class Degree360Player extends VideoPlayer implements MetaListener {
     @Override
     public synchronized void init() {
         super.init();
-        buffer = new VertexBuffer(GlUsage.DYNAMIC_WRITE);
+        buffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
     }
 
     @Override
@@ -54,10 +53,12 @@ public class Degree360Player extends VideoPlayer implements MetaListener {
         int color = 0xFF000000 | (gray << 16) | (gray << 8) | gray;
         buffer.bind();
         if (dirty) {
-            BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_TEXTURE_COLOR);
+            Tessellator tess = Tessellator.getInstance();
+            BufferBuilder bufferBuilder = tess.getBuffer();
+            bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR_TEXTURE);
             for (int i = 0; i < vertexCount; i++) {
                 int idx = i * 5;
-                bufferBuilder.vertex(vertices[idx], vertices[idx + 1], vertices[idx + 2]).texture(vertices[idx + 3], vertices[idx + 4]).color(color);
+                bufferBuilder.vertex(vertices[idx], vertices[idx + 1], vertices[idx + 2]).color(color).texture(vertices[idx + 3], vertices[idx + 4]).next();
             }
             buffer.upload(bufferBuilder.end());
             dirty = false;

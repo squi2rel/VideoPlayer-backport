@@ -8,7 +8,7 @@
 		"squi2rel"
 	],
 	"contact": {
-		"sources": "https://github.com/VRCub/VideoPlayer"
+		"sources": "https://github.com/squi2rel/VideoPlayer-backport"
 	},
 	"license": "GPL-3.0",
 	"icon": "assets/videoplayer/icon.png",
@@ -30,8 +30,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.14",
-		"minecraft": "~1.21.4",
-		"java": ">=21",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
 		"fabric-api": "*"
 	},
 	"suggests": {
@@ -39,5 +39,6 @@
 	},
 	"breaks": {
 		"vivecraft": "<1.3.0"
-	}
+	},
+	"accessWidener": "videoplayer.accesswidener"
 }

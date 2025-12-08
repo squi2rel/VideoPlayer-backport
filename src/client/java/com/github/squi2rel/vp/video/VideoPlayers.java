@@ -12,10 +12,6 @@ public class VideoPlayers {
             if (old != null && old.getClass() == VideoPlayer.class) return old;
             return new VideoPlayer(screen, screen.p1, screen.p2, screen.p3, screen.p4);
         }
-        if (PlayerListener.accept(info)) {
-            if (old != null && old.getClass() == EntityCameraPlayer.class) return old;
-            return new EntityCameraPlayer(screen);
-        }
         return null;
     }
 }

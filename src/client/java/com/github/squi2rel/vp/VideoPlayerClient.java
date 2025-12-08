@@ -25,18 +25,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ClientBossBar;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BossBarS2CPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.profiler.Profilers;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Vector3f;
 
@@ -135,16 +132,18 @@ public class VideoPlayerClient implements ClientModInitializer {
         WorldRenderEvents.AFTER_SETUP.register(e -> VideoPlayerClient.update());
         WorldRenderEvents.AFTER_ENTITIES.register(ScreenRenderer::render);
         WorldRenderEvents.END.register(e -> VideoPlayerClient.postUpdate());
-        ClientPlayNetworking.registerGlobalReceiver(VideoPayload.ID, (p, c) -> client.execute(() -> {
-            ByteBuf buf = Unpooled.wrappedBuffer(p.data());
-            try {
-                ClientPacketHandler.handle(buf);
-            } catch (Exception e) {
-                LOGGER.error("Exception while handling packet", e);
-            } finally {
-                buf.release();
-            }
-        }));
+        ClientPlayNetworking.registerGlobalReceiver(VideoPayload.ID, (c, h, b, r) -> {
+            byte[] data = new byte[b.readableBytes()];
+            b.readBytes(data);
+            ByteBuf buf = Unpooled.wrappedBuffer(data);
+            c.execute(() -> {
+                try {
+                    ClientPacketHandler.handle(buf);
+                } catch (Exception e) {
+                    LOGGER.error("Exception while handling packet", e);
+                }
+            });
+        });
         ClientCommandRegistrationCallback.EVENT.register((d, c) -> d.register(ClientCommandManager.literal("vlc")
                 .then(ClientCommandManager.literal("play")
                         .then(ClientCommandManager.argument("url", StringArgumentType.greedyString())
@@ -564,7 +563,7 @@ public class VideoPlayerClient implements ClientModInitializer {
             return;
         }
 
-        float delta = VideoPlayerClient.client.getRenderTickCounter().getTickDelta(true);
+        float delta = client.getTickDelta();
         Vec3d eyePos = client.player.getCameraPosVec(delta);
         Vec3d lookVec = client.player.getRotationVec(delta);
 
@@ -573,10 +572,10 @@ public class VideoPlayerClient implements ClientModInitializer {
         remoteControl = false;
         for (ItemStack item : client.player.getHandItems()) {
             if (!Registries.ITEM.getId(item.getItem()).toString().equals(remoteControlName)) continue;
-            CustomModelDataComponent data = item.getComponents().get(DataComponentTypes.CUSTOM_MODEL_DATA);
+            NbtCompound data = item.getNbt();
             if (data == null) continue;
-            List<Float> id = data.floats();
-            if (id.isEmpty() || !id.contains(remoteControlId)) continue;
+            int id = data.getInt("CustomModelData");
+            if (id != remoteControlId) continue;
             remoteControl = true;
         }
         Vector3f lineEnd = eyePos.add(lookVec.multiply(remoteControl ? remoteControlRange : noControlRange)).toVector3f();
@@ -621,34 +620,22 @@ public class VideoPlayerClient implements ClientModInitializer {
 
     public static void update() {
         if (updated) return;
-        Profiler profiler = Profilers.get();
-        profiler.push("video");
-        profiler.push("updateFrame");
         for (ClientVideoScreen screen : screens) {
             if (screen.isPostUpdate()) continue;
             screen.swapTexture();
             screen.updateTexture();
         }
-        profiler.swap("checkInteract");
         checkInteract();
-        profiler.swap("updateBossBar");
         updateBossBar();
-        profiler.pop();
-        profiler.pop();
     }
 
     public static void postUpdate() {
         if (updated) return;
         updated = true;
-        Profiler profiler = Profilers.get();
-        profiler.push("video");
-        profiler.push("updateFrame");
         for (ClientVideoScreen screen : screens) {
             if (!screen.isPostUpdate()) continue;
             screen.updateTexture();
         }
-        profiler.pop();
-        profiler.pop();
     }
 
     private static String formatDuration(long millis, boolean showHour) {

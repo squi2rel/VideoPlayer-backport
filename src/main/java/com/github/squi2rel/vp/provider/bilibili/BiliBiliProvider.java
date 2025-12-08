@@ -4,6 +4,7 @@ import com.github.squi2rel.vp.provider.IVideoProvider;
 import com.google.gson.JsonParser;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,6 +16,8 @@ public abstract class BiliBiliProvider implements IVideoProvider {
 
     public static String biliTicket;
     public static long expireTime;
+
+    protected static HttpClient client = HttpClient.newHttpClient();
 
     protected static HttpRequest makeRequest(String url) {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url))

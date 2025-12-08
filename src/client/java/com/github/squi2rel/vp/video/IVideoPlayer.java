@@ -115,9 +115,9 @@ public interface IVideoPlayer {
     default void draw(Matrix4f mat, VertexConsumer consumer, Vector3f p1, Vector3f p2, Vector3f p3, Vector3f p4, float u1, float v1, float u2, float v2) {
         int gray = (int) (config.brightness / 100.0 * 255);
         int color = 0xFF000000 | (gray << 16) | (gray << 8) | gray;
-        consumer.vertex(mat, p1.x, p1.y, p1.z).texture(u1, v1).color(color);
-        consumer.vertex(mat, p2.x, p2.y, p2.z).texture(u1, v2).color(color);
-        consumer.vertex(mat, p3.x, p3.y, p3.z).texture(u2, v2).color(color);
-        consumer.vertex(mat, p4.x, p4.y, p4.z).texture(u2, v1).color(color);
+        consumer.vertex(mat, p1.x, p1.y, p1.z).texture(u1, v1).color(color).next();
+        consumer.vertex(mat, p2.x, p2.y, p2.z).texture(u1, v2).color(color).next();
+        consumer.vertex(mat, p3.x, p3.y, p3.z).texture(u2, v2).color(color).next();
+        consumer.vertex(mat, p4.x, p4.y, p4.z).texture(u2, v1).color(color).next();
     }
 }

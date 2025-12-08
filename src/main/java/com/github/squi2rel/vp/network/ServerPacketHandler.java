@@ -9,7 +9,9 @@ import com.github.squi2rel.vp.DataHolder;
 import com.github.squi2rel.vp.video.VideoScreen;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -311,7 +313,9 @@ public class ServerPacketHandler {
     }
 
     public static void sendTo(ServerPlayerEntity player, byte[] bytes) {
-        ServerPlayNetworking.send(player, new VideoPayload(bytes));
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBytes(bytes);
+        ServerPlayNetworking.send(player, VideoPayload.ID, buf);
     }
 
     public static byte[] config(String version, ServerConfig config) {
@@ -355,7 +359,7 @@ public class ServerPacketHandler {
 
     public static byte[] createScreen(List<VideoScreen> screens) {
         ByteBuf buf = create(CREATE_SCREEN);
-        writeString(buf, screens.getFirst().area.name);
+        writeString(buf, screens.get(0).area.name);
         buf.writeByte(screens.size());
         for (VideoScreen screen : screens) {
             VideoScreen.write(buf, screen);
@@ -394,7 +398,7 @@ public class ServerPacketHandler {
 
     public static byte[] updatePlaylist(List<VideoScreen> screens) {
         ByteBuf buf = create(UPDATE_PLAYLIST);
-        writeString(buf, screens.getFirst().area.name);
+        writeString(buf, screens.get(0).area.name);
         buf.writeByte(screens.size());
         for (VideoScreen screen : screens) {
             writeString(buf, screen.name);
