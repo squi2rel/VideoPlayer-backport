@@ -386,6 +386,14 @@ public class VideoPlayerClient implements ClientModInitializer {
                                                             ClientPacketHandler.setMeta(screen, PacketID.Action.FOV.ordinal(), s.getArgument("fov", Integer.class));
                                                             return 1;
                                                         })))
+                                        .then(ClientCommandManager.literal("autoSync")
+                                                .then(ClientCommandManager.argument("autoSync", BoolArgumentType.bool())
+                                                        .executes(s -> {
+                                                            ClientVideoScreen screen = getScreen(s);
+                                                            if (screen == null) return 0;
+                                                            ClientPacketHandler.setMeta(screen, PacketID.Action.AUTO_SYNC.ordinal(), s.getArgument("autoSync", Boolean.class) ? 1 : 0);
+                                                            return 1;
+                                                        })))
                                         .then(ClientCommandManager.literal("custom")
                                                 .then(ClientCommandManager.literal("set")
                                                         .then(ClientCommandManager.argument("key", StringArgumentType.string())
@@ -618,7 +626,7 @@ public class VideoPlayerClient implements ClientModInitializer {
         for (ClientVideoScreen screen : screens) {
             if (screen.isPostUpdate()) continue;
             screen.swapTexture();
-            screen.updateTexture();
+            screen.update();
         }
         checkInteract();
         updateBossBar();
@@ -629,7 +637,7 @@ public class VideoPlayerClient implements ClientModInitializer {
         updated = true;
         for (ClientVideoScreen screen : screens) {
             if (!screen.isPostUpdate()) continue;
-            screen.updateTexture();
+            screen.update();
         }
     }
 
