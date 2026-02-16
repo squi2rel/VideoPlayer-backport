@@ -9,6 +9,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -158,7 +159,7 @@ public class ClientVideoScreen extends VideoScreen {
             } else {
                 syncFrames--;
             }
-            syncFrames = Math.clamp(syncFrames, 0, 7);
+            syncFrames = MathHelper.clamp(syncFrames, 0, 7);
 
             if (syncFrames < 5) {
                 if (delta > 10000) {
